@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import { Loader2, RefreshCw, AlertTriangle, PlayCircle, CheckCircle, XCircle, ChevronDown } from 'lucide-react';
@@ -31,7 +31,7 @@ const JOB_DEFINITIONS = [
   { id: 'run-maintenance', label: 'Run Maintenance' },
 ];
 
-const STATUS_DEFINITIONS: Record<string, { label: string; icon: JSX.Element; className: string }> = {
+const STATUS_DEFINITIONS: Record<string, { label: string; icon: React.ReactElement; className: string }> = {
   running: {
     label: 'Running',
     icon: <PlayCircle className="h-4 w-4" />,
