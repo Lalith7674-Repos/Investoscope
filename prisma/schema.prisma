@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["mongoDb"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  email         String?  @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  preferences   Preference?
+  savedItems    SavedItem[]
+  priceAlerts   PriceAlert[] @relation("UserPriceAlerts")
+}
+
+model Account {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String   @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user              User     @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Preference {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String   @unique @db.ObjectId
+  defaultAmount      Int      @default(100)
+  riskTolerance      String   @default("medium") // "low" | "medium" | "high"
+  currency           String   @default("INR")
+  consentCookies     Boolean  @default(false)
+  showAdvanced       Boolean  @default(false)
+  onboarded          Boolean  @default(false)
+  investmentGoal     String?
+  timeHorizon        String?
+  investmentStyle    String?
+  discoverState      Json?
+  chartsState        Json?
+
+  user               User     @relation(fields: [userId], references: [id])
+}
+
+model Admin {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  email         String   @unique
+  passwordHash  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum Category {
+  STOCK
+  MUTUAL_FUND
+  SIP
+  ETF
+}
+
+enum SubtypeMF {
+  EQUITY
+  INDEX
+  DEBT
+  HYBRID
+}
+
+enum SubtypeETF {
+  BROAD_MARKET
+  SECTOR
+  GOLD
+  INTERNATIONAL
+}
+
+enum MarketCap {
+  LARGE
+  MID
+  SMALL
+}
+
+model InvestmentOption {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  category        Category
+  name            String
+  symbol          String?         // stock/ETF ticker
+  amc             String?         // mutual fund AMC
+  subtypeMF       SubtypeMF?
+  subtypeETF      SubtypeETF?
+  marketCap       MarketCap?
+  expenseRatioBps Int?
+  minLumpSum      Int?
+  minSIP          Int?
+  unitPrice       Float?
+  riskLevel       String          // "low" | "medium" | "high"
+  riskReason      String?
+  lastUpdated     DateTime @default(now())
+  active          Boolean  @default(true)
+  priceHash       String?
+  navHash         String?
+  peRatio         Float?
+  beta            Float?
+  marketCapValue  Float?
+  priceAlerts     PriceAlert[] @relation("OptionPriceAlerts")
+
+  @@index([category, name])
+  @@index([category, unitPrice])
+  @@index([category, minLumpSum])
+  @@index([category, minSIP])
+  @@index([symbol])
+}
+
+model HistoricalPrice {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  symbol      String
+  date        DateTime
+  close       Float
+  source      String   // "yahoo", "mfapi", etc.
+
+  @@index([symbol, date], map: "symbol_date_idx")
+}
+
+model AffordablePick {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  category    Category
+  title       String
+  optionIds   String[] @db.ObjectId
+  fromDate    DateTime
+  toDate      DateTime?
+  createdAt   DateTime @default(now())
+  active      Boolean  @default(true)
+
+  @@index([category, active])
+}
+
+model SavedItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  optionId    String   @db.ObjectId
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, optionId], map: "user_option_unique")
+}
+
+model PriceAlert {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  optionId    String   @db.ObjectId
+  direction   String
+  targetPrice Float
+  active      Boolean  @default(true)
+  triggeredAt DateTime?
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], name: "UserPriceAlerts")
+  option      InvestmentOption @relation(fields: [optionId], references: [id], name: "OptionPriceAlerts")
+
+  @@index([userId, optionId, active])
+}
+
+model SyncLog {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  jobId      String
+  status     String
+  startedAt  DateTime @default(now())
+  finishedAt DateTime?
+  processed  Int      @default(0)
+  updated    Int      @default(0)
+  skipped    Int      @default(0)
+  failed     Int      @default(0)
+  details    Json?
+
+  @@index([jobId, startedAt])
+}

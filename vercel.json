@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/jobs/run-maintenance",
+      "schedule": "0 3 * * 1-5"
+    },
+    {
+      "path": "/api/jobs/sync-catalogue",
+      "schedule": "0 2 * * 1"
+    }
+  ]
+}
