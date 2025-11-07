@@ -24,6 +24,15 @@ export default function SyncPage() {
     async function checkAdmin() {
       try {
         const res = await fetch("/api/admin/check");
+        // Ignore 404s - route might not be ready yet
+        if (res.status === 404) {
+          setIsAdmin(false);
+          return;
+        }
+        if (!res.ok) {
+          setIsAdmin(false);
+          return;
+        }
         const data = await res.json();
         if (data.ok && data.isAdmin) {
           setIsAdmin(true);
@@ -186,12 +195,15 @@ export default function SyncPage() {
     jobIds.forEach(async (jobId) => {
       try {
         const res = await fetch(`/api/admin/progress/${jobId}`);
+        // Ignore 404s - route might not be ready yet or job hasn't started
+        if (res.status === 404) return;
+        if (!res.ok) return;
         const data = await res.json();
         if (data.ok && data.progress && data.progress.processed > 0) {
           setProgress((prev) => ({ ...prev, [jobId]: data.progress }));
         }
       } catch (e) {
-        // Ignore
+        // Ignore network errors
       }
     });
   }, []);
@@ -317,6 +329,9 @@ export default function SyncPage() {
   async function checkDuplicates() {
     try {
       const res = await fetch("/api/admin/duplicates");
+      // Ignore 404s - route might not be ready yet
+      if (res.status === 404) return;
+      if (!res.ok) return;
       const data = await res.json();
       if (data.ok) {
         setDuplicateInfo({
@@ -325,7 +340,7 @@ export default function SyncPage() {
         });
       }
     } catch (e) {
-      // Ignore
+      // Ignore network errors
     }
   }
 

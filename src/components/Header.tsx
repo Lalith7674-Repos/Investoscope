@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getSafeServerSession } from "@/lib/auth";
 import { headers } from "next/headers";
 import UserProfile from "./UserProfile";
 import type { Session } from "next-auth";
@@ -10,7 +9,8 @@ function isActive(pathname: string, href: string) {
 }
 
 export default async function Header() {
-  const session = (await getServerSession(authOptions as any)) as Session | null;
+  // Safely get session, handling invalid cookies gracefully
+  const session = (await getSafeServerSession()) as Session | null;
   const hdrs = await headers();
   const pathname = hdrs.get("x-pathname") || "";
 

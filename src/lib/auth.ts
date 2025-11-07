@@ -6,9 +6,40 @@ import { prisma } from "./prisma";
 import { sendThankYouEmail } from "./mailer";
 import { ensurePreference } from "./preferences";
 
+// Validate NEXTAUTH_SECRET is set
+if (!process.env.NEXTAUTH_SECRET) {
+  console.warn("⚠️  NEXTAUTH_SECRET is not set. Authentication may not work correctly.");
+}
+
+// Custom logger to suppress JWT_SESSION_ERROR (happens when old cookies exist)
+const customLogger = {
+  error(code: string, metadata: any) {
+    // Suppress JWT_SESSION_ERROR - it's expected when old cookies exist with different secret
+    if (code === "JWT_SESSION_ERROR" || code?.includes("JWT_SESSION_ERROR")) {
+      // Silently ignore - old cookies will be cleared on next request or user can clear manually
+      return;
+    }
+    // Log other errors normally
+    const errorUrl = `https://next-auth.js.org/errors#${code.toLowerCase()}`;
+    console.error(`[next-auth][error][${code}]`, errorUrl, metadata?.message || metadata, metadata);
+  },
+  warn(code: string, metadata?: any) {
+    const warnUrl = `https://next-auth.js.org/warnings#${code.toLowerCase()}`;
+    console.warn(`[next-auth][warn][${code}]`, warnUrl, metadata);
+  },
+  debug(message: string, metadata?: any) {
+    // Suppress debug logs in production
+    if (process.env.NODE_ENV === "development") {
+      console.debug(`[next-auth][debug]`, message, metadata);
+    }
+  },
+};
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-change-in-production",
+  logger: customLogger,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
@@ -107,4 +138,21 @@ export const authOptions: NextAuthOptions = {
   cookies: {},
 };
 
+/**
+ * Safely get server session, handling JWT decryption errors gracefully
+ * Returns null if session is invalid (e.g., encrypted with different secret)
+ */
+export async function getSafeServerSession() {
+  try {
+    const { getServerSession } = await import("next-auth");
+    return await getServerSession(authOptions as any);
+  } catch (error: any) {
+    // If JWT decryption fails (e.g., old cookies with different secret), return null
+    if (error?.message?.includes("decryption") || error?.message?.includes("JWT_SESSION_ERROR")) {
+      return null;
+    }
+    // Re-throw unexpected errors
+    throw error;
+  }
+}
 

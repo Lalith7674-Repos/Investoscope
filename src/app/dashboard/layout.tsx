@@ -1,11 +1,12 @@
 import { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getSafeServerSession } from "@/lib/auth";
 import { ensurePreference } from "@/lib/preferences";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const session = await getServerSession(authOptions as any);
+  // Safely get session, handling invalid cookies gracefully
+  const session = await getSafeServerSession();
+  
   if (!session?.user?.id) {
     redirect("/login?callbackUrl=/dashboard");
   }
