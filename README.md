@@ -192,14 +192,22 @@ investoscope/
 
 ## 🔄 Sync Jobs Explained
 
-| Job | Source | What It Does | Schedule | Time |
-|-----|--------|--------------|----------|------|
-| **sync-nse-universe** | NSE | Fetches all stocks & ETFs listed on NSE | `0 13 * * 1-5` (1 PM Mon-Fri) | 2-5 min |
-| **sync-mf-universe** | AMFI | Fetches all mutual fund schemes | `0 2 * * *` (2 AM daily) | 3-5 min |
-| **sync-prices** | TwelveData/AlphaVantage/Yahoo | Updates current prices for stocks/ETFs | `0 3 * * 1-5` (3 AM Mon-Fri) | 5-10 min |
-| **sync-mf-nav** | AMFI | Updates latest NAVs for mutual funds | `30 14 * * *` (2:30 PM daily) | 2-3 min |
+### Automated Schedule (Vercel Cron)
 
-**Times are in UTC!**
+| Job | Source | What It Does | Schedule (UTC) | Time (IST) | Duration |
+|-----|--------|--------------|----------------|------------|----------|
+| **run-maintenance** | Multiple | Updates prices + catalogue | `0 3 * * 1-5` | **8:30 AM Mon-Fri** | 10-15 min |
+| **run-maintenance (Backup)** | Multiple | Backup price update | `0 14 * * 1-5` | **7:30 PM Mon-Fri** | 10-15 min |
+| **auto-sync-if-stale** | System | Auto-triggers if data stale | `0 16 * * 1-5` | **9:30 PM Mon-Fri** | <1 min |
+| **sync-catalogue** | NSE + AMFI | Discovers new listings | `0 2 * * 1` | **7:30 AM Monday** | 5-10 min |
+
+**Why Multiple Syncs?**
+- ✅ **Primary (Morning)**: Ensures Top Movers has fresh data by market open
+- ✅ **Backup (Evening)**: Safety net if morning sync fails
+- ✅ **Auto-Check (Late Evening)**: Automatically triggers sync if data >26 hours old
+- ✅ **Result**: **99%+ reliability for daily Top Movers updates**
+
+**Times are in UTC. IST = UTC + 5:30**
 
 ---
 

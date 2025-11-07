@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  if (req.headers.get("X-CRON-KEY") !== process.env.CRON_SECRET) {
+  // Vercel Cron sends 'x-vercel-cron' header, manual calls use 'X-CRON-KEY'
+  const vercelCronHeader = req.headers.get("x-vercel-cron");
+  const cronKeyHeader = req.headers.get("X-CRON-KEY");
+  const cronSecret = process.env.CRON_SECRET;
+  
+  // Allow if it's from Vercel Cron OR if X-CRON-KEY matches
+  const isVercelCron = vercelCronHeader === "1";
+  const isValidManualCall = cronKeyHeader === cronSecret;
+  
+  if (!isVercelCron && !isValidManualCall) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 

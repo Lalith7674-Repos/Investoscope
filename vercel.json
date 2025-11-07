@@ -5,6 +5,14 @@
       "schedule": "0 3 * * 1-5"
     },
     {
+      "path": "/api/jobs/run-maintenance",
+      "schedule": "0 14 * * 1-5"
+    },
+    {
+      "path": "/api/jobs/auto-sync-if-stale",
+      "schedule": "0 16 * * 1-5"
+    },
+    {
       "path": "/api/jobs/sync-catalogue",
       "schedule": "0 2 * * 1"
     }

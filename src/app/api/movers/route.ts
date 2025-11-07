@@ -139,7 +139,22 @@ export async function GET() {
     if (losers.length) groups.push({ title: "Top Losers", items: losers });
     if (etfs.length) groups.push({ title: "ETFs in Focus", items: etfs });
 
-    return NextResponse.json({ ok: true, groups, asOf: latest.date });
+    // Check data freshness - warn if data is more than 26 hours old
+    const now = new Date();
+    const dataAge = now.getTime() - new Date(latest.date).getTime();
+    const hoursOld = dataAge / (1000 * 60 * 60);
+    const isStale = hoursOld > 26;
+
+    return NextResponse.json({ 
+      ok: true, 
+      groups, 
+      asOf: latest.date,
+      dataFreshness: {
+        hoursOld: Math.round(hoursOld * 10) / 10,
+        isStale,
+        warning: isStale ? "Data may be outdated. Sync job may need to run." : null,
+      },
+    });
   } catch (e: any) {
     console.error("Error fetching movers:", e);
     // Return empty groups on error instead of failing
