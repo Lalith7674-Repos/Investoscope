@@ -6,8 +6,6 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./prisma";
 import { sendThankYouEmail } from "./mailer";
 import { ensurePreference } from "./preferences";
-// Import types to ensure module augmentation is recognized
-import "@/types";
 
 // Validate NEXTAUTH_SECRET is set
 if (!process.env.NEXTAUTH_SECRET) {
