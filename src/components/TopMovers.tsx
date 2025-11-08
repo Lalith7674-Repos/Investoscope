@@ -54,9 +54,7 @@ export default function TopMovers() {
       <div className="card p-8 text-center space-y-2">
         <p className="text-slate-400">No market data available yet.</p>
         <p className="text-slate-500 text-sm">
-          The sync job runs daily at 3 AM UTC (8:30 AM IST). 
-          <br />
-          If this persists, check <a href="/admin/sync" className="text-blue-400 underline">admin dashboard</a> to verify sync status.
+          The sync job runs daily at 3 AM UTC (8:30 AM IST).
         </p>
       </div>
     );
