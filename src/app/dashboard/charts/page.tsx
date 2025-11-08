@@ -35,7 +35,7 @@ export default function ChartsPage() {
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("1y");
-  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined); // Fixed: added initial value
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [hasLoadedPrefs, setHasLoadedPrefs] = useState(false);
   const controlsRef = useRef<HTMLDivElement>(null);
