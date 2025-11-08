@@ -9,6 +9,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "InvestoScope - Discover investments that fit your budget",
   description: "Enter any amount and instantly see real investment options across Mutual Funds, SIPs, ETFs, and Stocks. No advice. No jargon.",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
