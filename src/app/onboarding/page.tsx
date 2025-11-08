@@ -1,11 +1,10 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getSafeServerSession } from "@/lib/auth";
 import { ensurePreference } from "@/lib/preferences";
 import OnboardingClient from "@/components/onboarding/OnboardingClient";
 
 export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
-  const session = await getServerSession(authOptions as any);
+  const session = await getSafeServerSession();
   if (!session?.user?.id) {
     redirect(`/login?callbackUrl=${encodeURIComponent("/onboarding")}`);
   }

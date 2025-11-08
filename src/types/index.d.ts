@@ -23,6 +23,12 @@ export interface InvestmentOption {
   expenseRatioBps?: number | null;
   active: boolean;
   lastUpdated: Date;
+  // Additional fields from Prisma schema
+  priceHash?: string | null;
+  navHash?: string | null;
+  peRatio?: number | null;
+  beta?: number | null;
+  marketCapValue?: number | null;
 }
 
 export interface DiscoverInput {

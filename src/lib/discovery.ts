@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { RiskLevel, InvestmentOption } from "@/types";
 
 type Category = "STOCK" | "MUTUAL_FUND" | "SIP" | "ETF";
 
@@ -11,10 +12,10 @@ export type DiscoverInput = {
 };
 
 export type DiscoverResult = {
-  exactMatches: any[];
+  exactMatches: InvestmentOption[];
   fallbackUsed: boolean;
   fallbackRange?: { min: number; max: number };
-  fallbackMatches?: any[];
+  fallbackMatches?: InvestmentOption[];
 };
 
 const FALLBACK_BANDS = [
@@ -123,8 +124,14 @@ export async function discoverOptions(input: DiscoverInput): Promise<DiscoverRes
     take: 100, // Show more options like Groww
   });
 
-  if (exactMatches.length > 0) {
-    return { exactMatches, fallbackUsed: false };
+  // Cast to InvestmentOption type to ensure type safety
+  const typedExactMatches = exactMatches.map((item) => ({
+    ...item,
+    riskLevel: item.riskLevel as RiskLevel,
+  })) as InvestmentOption[];
+
+  if (typedExactMatches.length > 0) {
+    return { exactMatches: typedExactMatches, fallbackUsed: false };
   }
 
   // Fallback: broaden search to a nearby band
@@ -177,11 +184,17 @@ export async function discoverOptions(input: DiscoverInput): Promise<DiscoverRes
     take: 100, // Show more options like Groww
   });
 
+  // Cast to InvestmentOption type to ensure type safety
+  const typedFallbackMatches = fallbackMatches.map((item) => ({
+    ...item,
+    riskLevel: item.riskLevel as RiskLevel,
+  })) as InvestmentOption[];
+
   return {
     exactMatches: [],
     fallbackUsed: true,
     fallbackRange: band,
-    fallbackMatches,
+    fallbackMatches: typedFallbackMatches,
   };
 }
 

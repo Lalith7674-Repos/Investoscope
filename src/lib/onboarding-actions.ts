@@ -1,7 +1,6 @@
 "use server";
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "./auth";
+import { getSafeServerSession } from "./auth";
 import { prisma } from "./prisma";
 
 export type OnboardingInput = {
@@ -13,7 +12,7 @@ export type OnboardingInput = {
 };
 
 export async function completeOnboardingAction(input: OnboardingInput) {
-  const session = await getServerSession(authOptions as any);
+  const session = await getSafeServerSession();
   if (!session?.user?.id) {
     throw new Error("Not authenticated");
   }

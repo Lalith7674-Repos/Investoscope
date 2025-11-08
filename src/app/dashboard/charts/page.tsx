@@ -141,11 +141,18 @@ export default function ChartsPage() {
       return;
     }
 
+    // Store symbol in a variable to satisfy TypeScript's null checking
+    const symbol = selectedCompany.symbol;
+    if (!symbol) {
+      setChartData([]);
+      return;
+    }
+
     async function fetchChart() {
       setLoading(true);
       try {
         const res = await fetch(
-          `/api/charts/${encodeURIComponent(selectedCompany.symbol!)}?period=${timePeriod}`,
+          `/api/charts/${encodeURIComponent(symbol)}?period=${timePeriod}`,
           { cache: "no-store" }
         );
         const data = await res.json();

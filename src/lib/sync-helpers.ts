@@ -144,32 +144,36 @@ export async function upsertSecurityFromNse(row: any) {
       data: { active: false },
     });
     // Update the one we're keeping (also update category in case it changed)
+    const updateData: any = {
+      active: true, 
+      category: category as any,
+      name, 
+      unitPrice: currentPrice || undefined,
+    };
+    if (marketCap) updateData.marketCap = marketCap;
+    if (subtypeETF) updateData.subtypeETF = subtypeETF;
+    
     await prisma.investmentOption.update({
       where: { id: keep.id },
-      data: { 
-        active: true, 
-        category: category as any,
-        name, 
-        unitPrice: currentPrice || undefined,
-        ...(marketCap && { marketCap }),
-        ...(subtypeETF && { subtypeETF }),
-      },
+      data: updateData,
     });
     return { status: "updated" as const, symbol: vendorSymbol, category: category as any };
   }
 
   if (existing.length === 1) {
     // Update existing (also update category in case it changed)
+    const updateData: any = {
+      active: true, 
+      category: category as any,
+      name, 
+      unitPrice: currentPrice || undefined,
+    };
+    if (marketCap) updateData.marketCap = marketCap;
+    if (subtypeETF) updateData.subtypeETF = subtypeETF;
+    
     await prisma.investmentOption.update({
       where: { id: existing[0].id },
-      data: { 
-        active: true, 
-        category: category as any,
-        name, 
-        unitPrice: currentPrice || undefined,
-        ...(marketCap && { marketCap }),
-        ...(subtypeETF && { subtypeETF }),
-      },
+      data: updateData,
     });
     return { status: "updated" as const, symbol: vendorSymbol, category: category as any };
   }

@@ -4,6 +4,7 @@ import LineChart from "@/components/charts/LineChart";
 import SipCalculator from "@/components/SipCalculator";
 import Logo from "@/components/Logo";
 import PriceAlertsCard from "@/components/PriceAlertsCard";
+import type { InvestmentOption, RiskLevel } from "@/types";
 
 async function getChartFor(option: any) {
   const base = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
@@ -36,8 +37,14 @@ async function getChartFor(option: any) {
 
 export default async function OptionDetails({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const option = await prisma.investmentOption.findUnique({ where: { id } });
-  if (!option) return notFound();
+  const optionRaw = await prisma.investmentOption.findUnique({ where: { id } });
+  if (!optionRaw) return notFound();
+
+  // Cast to InvestmentOption type to ensure type safety
+  const option = {
+    ...optionRaw,
+    riskLevel: optionRaw.riskLevel as RiskLevel,
+  } as InvestmentOption;
 
   const chartData: any[] = await getChartFor(option);
 
