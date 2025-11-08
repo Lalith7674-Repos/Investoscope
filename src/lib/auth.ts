@@ -6,6 +6,8 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./prisma";
 import { sendThankYouEmail } from "./mailer";
 import { ensurePreference } from "./preferences";
+// Import types to ensure module augmentation is recognized
+import "@/types";
 
 // Validate NEXTAUTH_SECRET is set
 if (!process.env.NEXTAUTH_SECRET) {
@@ -140,11 +142,26 @@ export const authOptions: NextAuthOptions = {
 };
 
 /**
- * Get server session with proper typing
+ * Extended Session type with user.id
  */
-export async function getServerSessionTyped(): Promise<Session | null> {
+export type ExtendedSession = Session & {
+  user: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+};
+
+/**
+ * Get server session with proper typing
+ * Uses the extended Session type from types/index.d.ts
+ */
+export async function getServerSessionTyped(): Promise<ExtendedSession | null> {
   const { getServerSession } = await import("next-auth");
-  return await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
+  // Type assertion to ensure our extended Session type is used
+  return session as ExtendedSession | null;
 }
 
 /**
