@@ -1,4 +1,5 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
+import type { Session } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import EmailProvider from "next-auth/providers/email";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
@@ -139,13 +140,20 @@ export const authOptions: NextAuthOptions = {
 };
 
 /**
+ * Get server session with proper typing
+ */
+export async function getServerSessionTyped(): Promise<Session | null> {
+  const { getServerSession } = await import("next-auth");
+  return await getServerSession(authOptions);
+}
+
+/**
  * Safely get server session, handling JWT decryption errors gracefully
  * Returns null if session is invalid (e.g., encrypted with different secret)
  */
 export async function getSafeServerSession() {
   try {
-    const { getServerSession } = await import("next-auth");
-    return await getServerSession(authOptions as any);
+    return await getServerSessionTyped();
   } catch (error: any) {
     // If JWT decryption fails (e.g., old cookies with different secret), return null
     if (error?.message?.includes("decryption") || error?.message?.includes("JWT_SESSION_ERROR")) {

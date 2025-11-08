@@ -1,14 +1,13 @@
 "use server";
 
 import { prisma } from "./prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "./auth";
+import { getServerSessionTyped } from "./auth";
 
 export async function toggleSavedAction(optionId: string) {
-  const session = await getServerSession(authOptions as any);
+  const session = await getServerSessionTyped();
   if (!session?.user?.id) return { ok: false, error: "Not authenticated" };
 
-  const userId = (session.user as any).id;
+  const userId = session.user.id;
   const existing = await prisma.savedItem.findFirst({
     where: { userId, optionId },
   });
@@ -25,10 +24,10 @@ export async function toggleSavedAction(optionId: string) {
 }
 
 export async function getSavedStatus(optionId: string): Promise<boolean> {
-  const session = await getServerSession(authOptions as any);
+  const session = await getServerSessionTyped();
   if (!session?.user?.id) return false;
 
-  const userId = (session.user as any).id;
+  const userId = session.user.id;
   const existing = await prisma.savedItem.findFirst({
     where: { userId, optionId },
   });

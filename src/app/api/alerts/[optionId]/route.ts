@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getServerSessionTyped } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 async function requireSession() {
-  const session = await getServerSession(authOptions as any);
+  const session = await getServerSessionTyped();
   if (!session?.user?.id) {
     throw new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401 });
   }
-  return session.user as any;
+  return session.user;
 }
 
 export async function GET(
@@ -20,7 +19,7 @@ export async function GET(
     const { optionId } = await params;
 
     const alerts = await prisma.priceAlert.findMany({
-      where: { userId: user.id as string, optionId, active: true },
+      where: { userId: user.id, optionId, active: true },
       orderBy: { createdAt: "desc" },
     });
 
@@ -47,7 +46,7 @@ export async function POST(
 
     const alert = await prisma.priceAlert.create({
       data: {
-        userId: user.id as string,
+        userId: user.id,
         optionId,
         direction,
         targetPrice,
@@ -75,7 +74,7 @@ export async function DELETE(
     }
 
     await prisma.priceAlert.deleteMany({
-      where: { id: alertId, userId: user.id as string, optionId },
+      where: { id: alertId, userId: user.id, optionId },
     });
 
     return NextResponse.json({ ok: true });

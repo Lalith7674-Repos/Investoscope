@@ -9,7 +9,7 @@ export async function GET() {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = (session.user as any).id as string;
+    const userId = session.user.id;
     const pref = await prisma.preference.findUnique({ 
       where: { userId },
       select: {
