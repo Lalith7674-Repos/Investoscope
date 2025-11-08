@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { getServerSessionTyped } from "@/lib/auth";
+import { getServerSessionTyped, type ExtendedSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 async function requireSession() {
-  const session = await getServerSessionTyped();
-  if (!session?.user?.id) {
+  const session: ExtendedSession | null = await getServerSessionTyped();
+  if (!session || !session.user || !session.user.id) {
     throw new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), { status: 401 });
   }
   return session.user;

@@ -154,11 +154,12 @@ export type ExtendedSession = Session & {
 /**
  * Get server session with proper typing
  * Uses the extended Session type from types/index.d.ts
+ * The session callback in authOptions sets user.id, so we assert the extended type
  */
 export async function getServerSessionTyped(): Promise<ExtendedSession | null> {
   const { getServerSession } = await import("next-auth");
   const session = await getServerSession(authOptions);
-  // Type assertion to ensure our extended Session type is used
+  // Type assertion: session callback ensures user.id exists
   return session as ExtendedSession | null;
 }
 
